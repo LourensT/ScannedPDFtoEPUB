@@ -1,15 +1,14 @@
 import pdf2image
-from PIL import Image
 import pytesseract
 
 from typing import List
 import os
 
-"""
-Handles the Optical Character Recognition (OCR) of a scanned PDF file.
-"""
 
 class OCR:
+    """
+    Handles the Optical Character Recognition (OCR) of a scanned PDF file.
+    """
     temp_dir = 'temp/'
 
     def __init__(self, pdf_file):
@@ -31,7 +30,6 @@ class OCR:
     def get_pages(self, store_temp=False) -> List[str]:
         self.text = []
         for pg, img in enumerate(self.images):
-            print(pg)
             txt = self.ocr_core(img)
             self.text.append(txt)
             if store_temp:

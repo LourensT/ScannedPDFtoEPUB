@@ -1,8 +1,10 @@
 # Scanned PDF to Epub
 
+The idea is to convert a scanned PDF to an epub, and taking care of formatting using a LLM.
+
+Project is currently in a stage where I use it for myself. The API costs are pretty bad, like a $1 per hundred pages. 
 
 ## Aproach
-
 1. PDF -> images with pdf2image
     * Saves the images in `tempimages/`
 2. OCR with pytesseract
@@ -12,7 +14,7 @@
     * `pandoc book.txt -o book.epub`
 
 
-## Install (linux/wsl)
+## Install (linux/wsl, python3.10)
 1. Make venv, and install pytesseract and other requirements
 
 `python3 -m venv env`
@@ -29,12 +31,28 @@
 2. Install pandoc
     1. download the amd64 .deb from https://github.com/jgm/pandoc/releases/
     2. `sudo dpkg -i $DEB` where `$DEB` is the downloaded file
-3. Set environemnt variable `OPENAI_API_KEY` to your OpenAI API key
+3. Set `.env` with `OPENAI_API_KEY=yourkey`
 
-## Later
-- [ ] Make "expensive" option which uses OpenAI API for all OCR. Will likely be a step better.
-- [ ] should have some sort of progress bar
-- [ ] Overlapping chunks, and how to handle them.
+## Usage
+Run the `run.sh` script with the path to the pdf as the first argument
+
+`source run.sh path/to/pdf`
+
+## To Do
+- [ ] Restructure repo
+
+- [ ] Progress bar
+    - [ ] Parallelize OCR and OpenAI API.
+- [ ] Improve chunk splitting
+    - [ ] Currently chunks split at the line, should split at the page. 
+    - [ ] Overlapping chunks, and how to handle them. 
+- [ ] Better book metadata (author, title, etc)
+    * You can use calibre for this too
 - [ ] Image support
-- [ ] Footnote support (works already, unless split between chunks)
-- [ ] Table support
+
+- [ ] Alternative "expensive" approach  which uses OpenAI API for all OCR. Will likely be a step function in performance.
+    * How much more expensive is this really? Seems to be about 0.003 cents for a 1000x600 image. https://openai.com/api/pricing/
+    * This would have many benefits:
+        * Tables probably
+        * Footnotes would work better
+        * Equations probably
