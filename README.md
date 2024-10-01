@@ -1,6 +1,5 @@
-# Scanned PDF to Epub
-
-The idea is to convert a scanned PDF to an epub, and taking care of formatting using a LLM.
+# Scanned PDF to Epub with GPT
+The idea is to convert a scanned PDF to an epub, and fix formatting using a LLM.
 
 Project is currently in a stage where I use it for myself. The API costs are pretty bad, like a $1 per hundred pages. 
 
