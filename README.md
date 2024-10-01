@@ -32,7 +32,9 @@
 3. Set environemnt variable `OPENAI_API_KEY` to your OpenAI API key
 
 ## Later
-- [ ] support non-scanned PDFs
-- [ ] image support
-- [ ] footnote support
-- [ ] table support
+- [ ] Make "expensive" option which uses OpenAI API for all OCR. Will likely be a step better.
+- [ ] should have some sort of progress bar
+- [ ] Overlapping chunks, and how to handle them.
+- [ ] Image support
+- [ ] Footnote support (works already, unless split between chunks)
+- [ ] Table support
