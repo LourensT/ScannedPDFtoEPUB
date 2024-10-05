@@ -45,6 +45,7 @@ Run the `run.sh` script with the path to the pdf as the first argument
 - [ ] Improve chunk splitting
     - [ ] Currently chunks split at the line, should split at the page. 
     - [ ] Overlapping chunks, and how to handle them. 
+    - [ ] Pass along the title of the book and the author, recognized from the first page.
 - [ ] Better book metadata (author, title, etc)
     * You can use calibre for this too
 - [ ] Image support
@@ -54,4 +55,5 @@ Run the `run.sh` script with the path to the pdf as the first argument
     * This would have many benefits:
         * Tables probably
         * Footnotes would work better
-        * Equations probably
+        * Equations probably (EPUB3 https://stackoverflow.com/questions/13991893/create-an-epub-file-from-markdown-with-math)
+    * Sometimes GPT might block because "violates the terms of service", even if this is not the case. The solution here can be to run the local OCR instead when this happens.

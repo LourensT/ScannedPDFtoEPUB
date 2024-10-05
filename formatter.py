@@ -12,7 +12,7 @@ class Formatter:
     Uses OpenAI API to convert the data to markdown format.
     """
     MODEL = 'gpt-4o'
-    INSTRUCTION = "The following file is the output of Optical Character Recognition of a scanned book. However, it is very messy. Your task is to format it as clean markdown. Please remove page numbering.Also note that many books repeat the title/chapter and author on every page, spot this and remove where necessary. If there are mistaken characters in the text, do your best guess at error correcting. Please format the document with headers, with chapter titles as H1 (# Chapter), and paragraph titles as H2 (##). Thank you."
+    INSTRUCTION = "The following file is the output of Optical Character Recognition of a scanned book. However, it is very messy. Your task is to format it as the markdown file format. Please remove page numbering. Also note that many books repeat the title/chapter and author on every page, and this might be erroneously repeated in the text. If so, do not mistake it for a header, and remove it! If there are mistaken characters in the text, do your best guess at error correcting. Please format the document with headers, with chapter titles as H1 (# Chapter), and paragraph titles as H2 (##). If you encounter an image caption, add a <missing image> tag before the caption."
     CONTEXT = 128_000
     BLOCK_SIZE = 1_000
 
@@ -33,8 +33,8 @@ class Formatter:
         cost_est = self.cost_est(est_sent, est_received)
         print(f"Estimated cost for {est_sent, est_received}: {cost_est[0]:.2f}$ sent, {cost_est[1]:.2f}$ received")
 
-        if sum(cost_est) > 1:
-            raise ValueError("Estimated cost is more than $1")
+        if sum(cost_est) > 10:
+            raise ValueError("Estimated cost is more than $10")
 
     def chunk_data(self, data: List[str]):
         """
@@ -59,28 +59,34 @@ class Formatter:
 
         blocks.append(block)
         blocks_sizes.append(curr_block_size)
-        
+
         return blocks, blocks_sizes
 
-    def format_data(self):
+    def format_data(self, store_temp=False):
         """
         Format the data into markdown format
         """
-        markdown = ""
-        for block in self.blocks:
+
+        for (i, block) in enumerate(self.blocks):
             if block == "":
                 print("Empty block")
                 continue
             formatted = self.handle_block(block)
-            if formatted is None:
+            if not formatted:
                 raise ValueError("Error in OpenAI call")
 
-            # TODO: ensure that this does not add a new line.
-            markdown += formatted["markdown"]
+            markdown = formatted["markdown"]
+            if store_temp:
+                print(i)
+                with open("temp.md", "a") as f:
+                    f.write(markdown)
 
-        return markdown
+        with open("temp.md", "r") as f:
+            md = f.read()
 
-    def handle_block(self, block: str):
+        return md
+
+    def handle_block(self, block: str, curr_try=1):
         """
         block: str
         """
@@ -125,10 +131,19 @@ class Formatter:
             tools=function_resp,
             tool_choice={"type": "function", "function": {"name": function_resp[0]['function']['name']}}
         )
-        result = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
-
         self.TOKEN_SENT += response.usage.prompt_tokens
         self.TOKEN_RECEIVED += response.usage.completion_tokens
+
+        try:
+            result = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
+        except Exception as e:
+            logging.error(f"Error in OpenAI response: {e}, try {curr_try}")
+            print(response)
+            if curr_try < 3:
+                return self.handle_block(block, curr_try + 1)
+            else:
+                print(response)
+                raise ValueError("Error in OpenAI response")
 
         logging.info(f"RESPONSE: {result}")
 
@@ -165,15 +180,29 @@ class Formatter:
 
         sent_cost = sent * pricing[self.MODEL][0] / 1_000_000
         received_cost = received * pricing[self.MODEL][1] / 1_000_000
+
         return sent_cost, received_cost
 
 
 if __name__ == '__main__':
-    with open("tests/marquezsmall.txt", "r") as f:
-        data = f.readlines()
+    # with open("tests/marquezsmall.txt", "r") as f:
+    #     data = f.readlines()
+
+    # save logging to file
+    logging.basicConfig(filename='formatter.log', level=logging.INFO)
+
+    data = []
+    import os
+    files = os.listdir("temp/")
+    i = 0
+    while f"{i}.txt" in files:
+        with open(f"temp/{i}.txt", "r") as f:
+            data.extend(f.readlines())
+        i += 1
 
     formatter = Formatter(data)
-    md = formatter.format_data()
+    md = formatter.format_data(store_temp=True)
     # save
-    with open("markdown.txt", "w") as f:
+    with open("full.md", "w") as f:
         f.write(md)
+
