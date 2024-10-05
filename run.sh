@@ -10,7 +10,7 @@ source env/bin/activate
 # set environment variables from .env
 export $(cat .env | xargs)
 # run conversion to markdown
-python3 main.py $1 $fpmd
+python main.py $1 $fpmd
 # deactivate python venv
 deactivate
 # convert markdown to pdf
