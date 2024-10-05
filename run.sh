@@ -3,11 +3,17 @@
 fpmd=$(echo $1 | sed 's/.pdf/.md/g')
 # replace .pdf with .epub in first argument
 ofepub=$(echo $1 | sed 's/.pdf/.epub/g')
+# print the file paths
+echo converting $1 to markdown $fpmd
 #activate pythnon venv
 source env/bin/activate
 # set environment variables from .env
 export $(cat .env | xargs)
 # run conversion to markdown
-python3 main.py $1 $fpmd
+python main.py $1 $fpmd
+# deactivate python venv
+deactivate
+# convert markdown to pdf
+echo converting markdown $fpmd to epub: $ofepub
 # convert markdown to epub
 pandoc $fpmd -o $ofepub

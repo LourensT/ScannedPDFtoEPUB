@@ -1,57 +1,53 @@
 # Scanned PDF to Epub with GPT
-The idea is to convert a scanned PDF to an epub, and fix formatting using a LLM.
+Uses GPT to convert a scanned PDF to an epub. The main motivation is to be able to read books on an e-reader, and to be able to search and highlight text.
+This is called "OCR" (Optical Character Recognition), and it is a common problem in computer vision. The main challenge is that the text is not in a structured format, but rather in an image.
 
-Project is currently in a stage where I use it for myself. The API costs are pretty bad, like a $1 per hundred pages. 
+Project is currently in a stage where I use it for myself. The API costs are pretty bad, like a $1 per hundred pages (October 2024). 
+So should be negligible cheap in a year or two :)
 
 ## Aproach
-1. PDF -> images with pdf2image
-    * Saves the images in `tempimages/`
-2. OCR with pytesseract
-3. Error correction and formatting with OpenAI API
-    * Save (in markdown) as `book.txt`
-4. Convert to Epub with Pandadoc
-    * `pandoc book.txt -o book.epub`
-
+Do OCR with GPT-4, with a bit of prompt engineering:
+1. Page-by-page OCR (image to markdown)
+    * pass along an object with context deduced from the previous pages. Specifically:
+        * The book title
+        * The author
+        * The chapter title
+        * The last 200 characters of the previous page.
+3. Convert the markdown to epub with Pandoc
 
 ## Install (linux/wsl, python3.10)
-1. Make venv, and install pytesseract and other requirements
+1. Make venv, and install requirements
 
-`python3 -m venv env`
+    `python3 -m venv env`
 
-`source env/bin/activate`
+    `source env/bin/activate`
 
-`pip install -r requirements.txt`
-2. Install tesseract engine from https://tesseract-ocr.github.io/tessdoc/Installation.html
-
-`sudo apt install tesseract-ocr`
-
-`sudo apt install libtesseract-dev`
+    `pip install -r requirements.txt`
 
 2. Install pandoc
     1. download the amd64 .deb from https://github.com/jgm/pandoc/releases/
     2. `sudo dpkg -i $DEB` where `$DEB` is the downloaded file
-3. Set `.env` with `OPENAI_API_KEY=yourkey`
+3. Create `.env` file with `OPENAI_API_KEY=yourkey`
+
+4. **Optional** Install tesseract engine from https://tesseract-ocr.github.io/tessdoc/Installation.html. 
+    * This is not strictly necessary, but it provides a back up in case the OpenAI API refuses the request. This happens when (mistakingly or not) the API thinks the request is violating the terms of service.
+    * If you want to install it, you can do it with the following commands:
+
+    `sudo apt install tesseract-ocr`
+
+    `sudo apt install libtesseract-dev`
 
 ## Usage
-Run the `run.sh` script with the path to the pdf as the first argument
+After installation (see before), run the `run.sh` script with the path to the pdf as the first argument
 
 `source run.sh path/to/pdf`
 
-## To Do
-- [ ] Restructure repo
-
-- [ ] Progress bar
-    - [ ] Parallelize OCR and OpenAI API.
-- [ ] Improve chunk splitting
-    - [ ] Currently chunks split at the line, should split at the page. 
-    - [ ] Overlapping chunks, and how to handle them. 
+## Todo
+- [x] Restructure repo
 - [ ] Better book metadata (author, title, etc)
     * You can use calibre for this too
 - [ ] Image support
-
-- [ ] Alternative "expensive" approach  which uses OpenAI API for all OCR. Will likely be a step function in performance.
-    * How much more expensive is this really? Seems to be about 0.003 cents for a 1000x600 image. https://openai.com/api/pricing/
-    * This would have many benefits:
-        * Tables probably
-        * Footnotes would work better
-        * Equations probably
+    * currently images are substitued by a placeholder description
+- [x] ~~Alternative "expensive" approach  which uses OpenAI API for all OCR.~~ This is now the main approach.
+    * Seems to be about 0.003 cents for a 1000x600 image. https://openai.com/api/pricing/
+    * Sometimes GPT might block because "violates the terms of service", even if this is not the case. The solution here can be to run the local OCR instead when this happens.
