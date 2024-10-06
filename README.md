@@ -1,4 +1,4 @@
-# Scanned PDF to Epub with GPT
+# Scanned PDF to EPUB with GPT
 Uses GPT to convert a scanned PDF to an epub. The main motivation is to be able to read books on an e-reader, and to be able to search and highlight text.
 This is called "OCR" (Optical Character Recognition), and it is a common problem in computer vision. The main challenge is that the text is not in a structured format, but rather in an image.
 
