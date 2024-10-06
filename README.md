@@ -5,7 +5,7 @@ This is called "OCR" (Optical Character Recognition), and it is a common problem
 Project is currently in a stage where I use it for myself. The API costs are pretty bad, like a $1 per hundred pages (October 2024). 
 So should be negligible cheap in a year or two :)
 
-## Aproach
+## Approach
 Do OCR with GPT-4, with a bit of prompt engineering:
 1. Page-by-page OCR (image to markdown)
     * pass along an object with context deduced from the previous pages. Specifically:
